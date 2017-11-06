@@ -294,7 +294,8 @@ public class MIM_VueNav extends LinearOpMode {
         /** Start tracking the data sets we care about. */
         stonesAndChips.activate();
 
-        while (opModeIsActive()) {
+        while (opModeIsActive())
+        {
 
             for (VuforiaTrackable trackable : allTrackables) {
                 /**
