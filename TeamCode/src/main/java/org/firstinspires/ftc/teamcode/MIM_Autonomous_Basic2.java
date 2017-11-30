@@ -29,23 +29,17 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.AnalogInput;
-import com.qualcomm.robotcore.hardware.AnalogSensor;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 
+@Autonomous(name="AutonomousBasic2", group="Linear Opmode")
 
-@TeleOp(name="TeleOp", group="Linear Opmode")
-
-public class MIM_TeleOp extends LinearOpMode
+public class MIM_Autonomous_Basic2 extends LinearOpMode
 {
 
     // Declare OpMode members.
@@ -56,13 +50,9 @@ public class MIM_TeleOp extends LinearOpMode
     {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-        
-        // this sensor looks at the jewel and reports the color as 3 RGB integer values
+
         ColorSensor jewelColor;
-        
-        // this it the sensor that measures the height of the main arm.
-        AnalogInput armPosition;
-        
+
 
 
         DcMotor frontLeftDrive;
@@ -72,11 +62,8 @@ public class MIM_TeleOp extends LinearOpMode
         DcMotor armDrive;
 
         Servo jewelServo;
-        Servo leftGrabA;
-        Servo rightGrabA;
-        Servo leftGrabB;
-        Servo rightGrabB;
-        Servo flipServo;
+        Servo leftGrab;
+        Servo rightGrab;
 
 
         // Setup a variable for each drive wheel to save power level for telemetry
@@ -96,16 +83,11 @@ public class MIM_TeleOp extends LinearOpMode
         armDrive = hardwareMap.get (DcMotor.class, "armDrive");
 
         jewelServo = hardwareMap.servo.get("jewelServo");
-        leftGrabA = hardwareMap.servo.get("leftGrabA");
-        rightGrabA = hardwareMap.servo.get("rightGrabA");
-        leftGrabB = hardwareMap.servo.get("leftGrabB");
-        rightGrabB = hardwareMap.servo.get("rightGrabB");
-        flipServo = hardwareMap.servo.get("flipServo");
+        leftGrab = hardwareMap.servo.get("leftGrab");
+        rightGrab = hardwareMap.servo.get("rightGrab");
 
         jewelColor = hardwareMap.colorSensor.get("jewelColor");
         jewelColor.enableLed(true);
-        
-        armPosition = hardwareMap.analogInput.get("armPos");
 
 
         // Most robots need the motor on one side to be reversed to drive forward
@@ -116,25 +98,9 @@ public class MIM_TeleOp extends LinearOpMode
         rearRightDrive.setDirection(DcMotor.Direction.REVERSE);
         armDrive.setDirection(DcMotor.Direction.REVERSE);
 
-        // Start position of the jewel bumping arm (up)
-        jewelServo.setPosition(1);
+        leftGrab.setPosition(0);
+        rightGrab.setPosition(1);
 
-        leftGrabA.setPosition(0);
-        rightGrabA.setPosition(1);
-        leftGrabB.setPosition(0);
-        rightGrabB.setPosition(1);
-        flipServo.setPosition(0);
-
-        armDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        //double armTime = 0;
-        //double armoffTime = 0;
-        //boolean armFlagUp = false;
-        //boolean armFlagDown = false;
-
-        boolean grabAflag = false;
-        boolean grabBflag = false;
-        boolean flipFlag = false;
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -143,59 +109,21 @@ public class MIM_TeleOp extends LinearOpMode
         while (opModeIsActive())
         {
 
-
-            leftStick1 =  gamepad1.left_stick_y;
-            rightStick1 = gamepad1.right_stick_y;
-
-            double leftRamp = Math.pow(Math.abs(leftStick1), 2.5);
-            double rightRamp = Math.pow(Math.abs(rightStick1), 2.5);
-
-          if( gamepad1.left_stick_y < 0 )
-          {
-            leftRamp = -leftRamp;
-          }
-
-          if( gamepad1.right_stick_y < 0 )
-          {
-            rightRamp = -rightRamp;
-          }
-
-        //When the dpad is pressed up or down and the flag is false then the arm moves up or down as arm runtime is tracked,
-            // otherwise it is stationary and and arm runtime is set to zero and arm off time begins tracking
-          if(gamepad2.dpad_up) //&& !armFlagUp)
-          {
-            armDrive.setPower(0.2);
-            //armTime = time;
-          }
-          else if (gamepad2.dpad_down) // && !armFlagDown)
-          {
-            armDrive.setPower(-0.1);
-            //armTime = time;
-          }
-          else
-          {
-              armDrive.setPower(0);
-              //armTime = 0;
-              //armoffTime = time;
-          }
-/*
-          // When the arm has run for over 1 second the flags will be set true, stopping the
-            // arm motor from moving any farther until time goes over 0.5 seconds
-            if (1.0 < armTime && armoffTime > armTime + 0.5)
+            if ( runtime.seconds() > 1.75 )
             {
-                armFlagUp = true;
-                armFlagDown = true;
+                rightPower = 0.0;
+                leftPower = 0.0;
+            }
+            else if (runtime.seconds() < 1.5)
+            {
+                rightPower = -0.5;
+                leftPower = -0.5;
             }
             else
             {
-                armFlagUp = false;
-                armFlagDown = false;
+                rightPower = 0.1;
+                leftPower = 0.1;
             }
-*/
-            //Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1
-            // (sets the values to between 1 and -1)
-            leftPower = Range.clip( leftRamp, -1.0, 1.0 );
-            rightPower = Range.clip( rightRamp, -1.0, 1.0 );
 
 
             // Send calculated power to wheels
@@ -205,43 +133,6 @@ public class MIM_TeleOp extends LinearOpMode
             frontRightDrive.setPower(rightPower);
             rearRightDrive.setPower(rightPower);
 
-            if (gamepad2.y && flipFlag == false)
-            {
-                flipServo.setPosition(1);
-                flipFlag = true;
-            }
-            if (gamepad2.y && flipFlag == true)
-            {
-                flipServo.setPosition(0);
-                flipFlag = false;
-            }
-
-            if(gamepad2.right_bumper && grabAflag == false)
-            {
-                leftGrabA.setPosition(1);
-                rightGrabA.setPosition(0);
-                grabAflag = true;
-            }
-            if(gamepad2.right_bumper && grabAflag == true)
-            {
-                leftGrabA.setPosition(0);
-                rightGrabA.setPosition(1);
-                grabAflag = false;
-            }
-
-            if(gamepad2.left_bumper && grabBflag == false)
-            {
-                leftGrabB.setPosition(0);
-                rightGrabB.setPosition(1);
-                grabBflag = true;
-            }
-            if(gamepad2.left_bumper && grabBflag == true)
-            {
-                leftGrabB.setPosition(1);
-                rightGrabB.setPosition(0);
-                grabBflag = false;
-            }
-
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
@@ -249,4 +140,7 @@ public class MIM_TeleOp extends LinearOpMode
         }
     }
 }
+
+
+
 
