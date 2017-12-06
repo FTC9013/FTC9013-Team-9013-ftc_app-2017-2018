@@ -63,7 +63,7 @@ public class MIM_TeleOp extends LinearOpMode
         // this it the sensor that measures the height of the main arm.
         AnalogInput armPosition;
         
-
+        
 
         DcMotor frontLeftDrive;
         DcMotor frontRightDrive;
@@ -85,6 +85,8 @@ public class MIM_TeleOp extends LinearOpMode
 
         double leftStick1 = 0;
         double rightStick1 = 0;
+        
+        double grabAButtonTime = 0;
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -134,7 +136,9 @@ public class MIM_TeleOp extends LinearOpMode
 
         boolean grabAflag = false;
         boolean grabBflag = false;
-        boolean flipFlag = false;
+        boolean grabButtonAflag = false;
+        boolean grabButtonBflag = false;
+        
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -204,18 +208,49 @@ public class MIM_TeleOp extends LinearOpMode
 
             frontRightDrive.setPower(rightPower);
             rearRightDrive.setPower(rightPower);
-
-            if (gamepad2.y && flipFlag == false)
+            
+            if (gamepad2.y && grabButtonAflag != true && grabAflag == false)
+            {
+              grabAflag = true;
+              grabButtonAflag = true;
+              grabAButtonTime = time;
+            }
+            if (gamepad2.y && grabButtonAflag != true && grabAflag == true)
+            {
+              grabAflag = false;
+            }
+            
+            if ( grabAButtonTime > 1 && grabButtonAflag == true)
+              {
+                grabButtonAflag = false;
+                grabAButtonTime = 0;
+              }
+              
+            if (grabAflag == true)
+            {
+              flipServo.setPosition(1);
+            }
+           else if (grabAflag = false)
+            {
+              flipServo.setPosition(0);
+            }
+          
+            
+            
+            
+            
+            /*if (gamepad2.y && grabAflag == false)
             {
                 flipServo.setPosition(1);
-                flipFlag = true;
+                grabAflag = true;
             }
-            if (gamepad2.y && flipFlag == true)
+            if (gamepad2.y && grabAflag == true)
             {
                 flipServo.setPosition(0);
-                flipFlag = false;
+                grabAflag = false;
             }
 
+            */
             if(gamepad2.right_bumper && grabAflag == false)
             {
                 leftGrabA.setPosition(1);
