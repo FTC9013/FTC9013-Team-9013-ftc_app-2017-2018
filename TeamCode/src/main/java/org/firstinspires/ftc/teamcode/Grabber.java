@@ -29,7 +29,7 @@ public class Grabber
   {
     // set the servos to the open jaw state
     servo1.setPosition( 1 );
-    servo2.setPosition( 1 );
+    servo2.setPosition( 0 );
     isOpen_= true;
   }
 
@@ -38,7 +38,7 @@ public class Grabber
   {
     // set the servos to the closed jaw state
     servo1.setPosition( 0 );
-    servo2.setPosition( 0 );
+    servo2.setPosition( 1 );
     isOpen_= false;
   }
 
@@ -53,12 +53,30 @@ public class Grabber
   {
     Servo tempServo1 = servo1;
     Servo tempServo2 = servo2;
+    boolean tempState = isOpen();
 
     // swap the servos with the grabber passed in
     servo1 = grabber.servo1;
     servo2 = grabber.servo2;
-
+    
+    if ( !grabber.isOpen())
+    {
+      close();
+    }
+    else
+    {
+      open();
+    }
+    
     grabber.servo1 = tempServo1;
     grabber.servo2 = tempServo2;
+    if ( !tempState )
+    {
+      grabber.close();
+    }
+    else
+    {
+      grabber.open();
+    }
   }
 }
