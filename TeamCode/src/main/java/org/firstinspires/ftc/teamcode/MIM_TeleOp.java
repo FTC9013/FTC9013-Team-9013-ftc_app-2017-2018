@@ -77,7 +77,8 @@ public class MIM_TeleOp extends LinearOpMode
         Servo leftGrabB;
         Servo rightGrabB;
         Servo flipServo;
-
+        Servo tempServo1;
+        Servo tempServo2;
 
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower = 0;
@@ -121,163 +122,180 @@ public class MIM_TeleOp extends LinearOpMode
         // Start position of the jewel bumping arm (up)
         jewelServo.setPosition(1);
 
-        leftGrabA.setPosition(0);
-        rightGrabA.setPosition(1);
+        leftGrabA.setPosition(1);
+        rightGrabA.setPosition(0);
         leftGrabB.setPosition(0);
         rightGrabB.setPosition(1);
         flipServo.setPosition(0);
 
         armDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        //double armTime = 0;
-        //double armoffTime = 0;
-        //boolean armFlagUp = false;
-        //boolean armFlagDown = false;
-
-        boolean grabAflag = false;
-        boolean grabBflag = false;
-        boolean grabButtonAflag = false;
-        boolean grabButtonBflag = false;
-        
-        // Wait for the game to start (driver presses PLAY)
+  
+      boolean flipReleaseFlag = false; //True when the flipper button is being pressed
+      boolean flipFlag = false; //True when the flipper is flipped
+      boolean aGrabFlag = false; //True when the A servos are closed
+      boolean aGrabReleaseFlag = false; //True when the A Grab button is being pressed
+      boolean bGrabFlag = false; //True when the B servos are closed
+      boolean bGrabReleaseFlag = false; //True when the B Grab button is being pressed
+      boolean flipLock = false; //True when the flipper is locked
+      boolean aGrabLock = false; //True when the A Grabbers are locked
+      boolean bGrabLock = false; //True when the B Grabbers are locked
+      boolean aUpFlag = false; //True when A grabber is on top
+  
+      // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
         {
-
-
             leftStick1 =  gamepad1.left_stick_y;
             rightStick1 = gamepad1.right_stick_y;
-
+    
             double leftRamp = Math.pow(Math.abs(leftStick1), 2.5);
             double rightRamp = Math.pow(Math.abs(rightStick1), 2.5);
-
-          if( gamepad1.left_stick_y < 0 )
-          {
-            leftRamp = -leftRamp;
-          }
-
-          if( gamepad1.right_stick_y < 0 )
-          {
-            rightRamp = -rightRamp;
-          }
-
-        //When the dpad is pressed up or down and the flag is false then the arm moves up or down as arm runtime is tracked,
-            // otherwise it is stationary and and arm runtime is set to zero and arm off time begins tracking
-          if(gamepad2.dpad_up) //&& !armFlagUp)
-          {
-            armDrive.setPower(0.2);
-            //armTime = time;
-          }
-          else if (gamepad2.dpad_down) // && !armFlagDown)
-          {
-            armDrive.setPower(-0.1);
-            //armTime = time;
-          }
-          else
-          {
-              armDrive.setPower(0);
-              //armTime = 0;
-              //armoffTime = time;
-          }
-/*
-          // When the arm has run for over 1 second the flags will be set true, stopping the
-            // arm motor from moving any farther until time goes over 0.5 seconds
-            if (1.0 < armTime && armoffTime > armTime + 0.5)
+    
+            if( gamepad1.left_stick_y < 0 )
             {
-                armFlagUp = true;
-                armFlagDown = true;
+              leftRamp = -leftRamp;
+            }
+    
+            if( gamepad1.right_stick_y < 0 )
+            {
+              rightRamp = -rightRamp;
+            }
+    
+            //When the dpad is pressed up or down and the flag is false then the arm moves up or down as arm runtime is tracked,
+            // otherwise it is stationary and and arm runtime is set to zero and arm off time begins tracking
+            if(gamepad2.dpad_up)
+            {
+              armDrive.setPower(0.4);
+              //armTime = time;
+            }
+            else if (gamepad2.dpad_down)
+            {
+              armDrive.setPower(-0.1);
+      
             }
             else
             {
-                armFlagUp = false;
-                armFlagDown = false;
+              armDrive.setPower(0);
             }
-*/
+    
+    
+            // When Y is pressed, the flipper servo is below position one, Y has been released from the last press, and the flipper is unlocked,
+            // set the position to 1 and wait trigger the flipper button release flag (wait for the button to be released)
+            if (gamepad2.y && flipFlag == false && flipReleaseFlag == false && flipLock == false)
+            {
+              flipFlag = true;
+              flipReleaseFlag = true;
+            }
+            // When Y is pressed, the flipper servo is in position one, Y has been released from the last press, and the flipper is unlocked,
+            // set the position to 0 and wait trigger the flipper button release flag (wait for the button to be released)
+            else if (gamepad2.y && flipFlag == true && flipReleaseFlag == false && flipLock == false)
+            {
+              flipFlag = false;
+              flipReleaseFlag = true;
+            }
+            // When Y is released, set the release flag to false, allowing the other flipper commands to take place
+            if (!gamepad2.y)
+            {
+              flipReleaseFlag = false;
+            }
+    
+    
+            // When the left bumper is pressed, the aGrabFlag is false, the bumper has been released from the last press, and the grabber is unlocked,
+            //set the aGrabFlag to true (which closes bottom the grabbers) and trigger the release flag (wait for the button to be released)
+            if (gamepad2.left_bumper && aGrabFlag == false && aGrabReleaseFlag == false && aGrabLock == false)
+            {
+              aGrabFlag = true;
+              aGrabReleaseFlag = true;
+            }
+            // When the left bumper is pressed, the aGrabFlag is true, the bumper has been released from the last press, and the grabber is unlocked,
+            //set the aGrabFlag to false (which opens bottom the grabbers) and trigger the release flag (wait for the button to be released)
+            else if (gamepad2.left_bumper && aGrabFlag == true && aGrabReleaseFlag == false && aGrabLock == false)
+            {
+              aGrabFlag = false;
+              aGrabReleaseFlag = true;
+            }
+            // When the left bumper is released, set the release flag to false, allowing the other A Grabber commands to take place
+            if (!gamepad2.left_bumper && aGrabReleaseFlag == true)
+            {
+              aGrabReleaseFlag = false;
+            }
+    
+            // When the right bumper is pressed, the bGrabFlag is false, the bumper has been released from the last press, and the grabber is unlocked,
+            //set the bGrabFlag to true (which closes the top grabbers) and trigger the release flag (wait for the button to be released)
+            if (gamepad2.right_bumper && bGrabFlag == false && bGrabReleaseFlag == false && bGrabLock == false)
+            {
+              bGrabFlag = true;
+              bGrabReleaseFlag = true;
+            }
+            // When the left bumper is pressed, the bGrabFlag is true, the bumper has been released from the last press, and the grabber is unlocked,
+            //set the bGrabFlag to false (which opens bottom the grabbers) and trigger the release flag (wait for the button to be released)
+            else if (gamepad2.right_bumper && bGrabFlag == true && bGrabReleaseFlag == false && bGrabLock == false)
+            {
+              bGrabFlag = false;
+              bGrabReleaseFlag = true;
+            }
+            // When the left bumper is released, set the release flag to false, allowing the other B Grabber commands to take place
+            if (!gamepad2.right_bumper && bGrabReleaseFlag == true)
+            {
+              bGrabReleaseFlag = false;
+            }
+    
+    
             //Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1
             // (sets the values to between 1 and -1)
             leftPower = Range.clip( leftRamp, -1.0, 1.0 );
             rightPower = Range.clip( rightRamp, -1.0, 1.0 );
-
-
+    
+    
             // Send calculated power to wheels
             frontLeftDrive.setPower(leftPower);
             rearLeftDrive.setPower(leftPower);
-
+    
             frontRightDrive.setPower(rightPower);
             rearRightDrive.setPower(rightPower);
-            
-            if (gamepad2.y && grabButtonAflag != true && grabAflag == false)
+    
+            //Close the bottom grabbers when the aGrabFlag is set true by the left bumper
+            if (aGrabFlag == true)
             {
-              grabAflag = true;
-              grabButtonAflag = true;
-              grabAButtonTime = time;
+              leftGrabA.setPosition(0);
+              rightGrabA.setPosition(1);
             }
-            if (gamepad2.y && grabButtonAflag != true && grabAflag == true)
+            //Open the bottom grabbers when the aGrabFlag is set false by the left bumper
+            else if (aGrabFlag == false)
             {
-              grabAflag = false;
+              leftGrabA.setPosition(1);
+              rightGrabA.setPosition(0);
             }
-            
-            if ( grabAButtonTime > 1 && grabButtonAflag == true)
-              {
-                grabButtonAflag = false;
-                grabAButtonTime = 0;
-              }
-              
-            if (grabAflag == true)
+    
+            //Close the top grabbers when the bGrabFlag is set true by the right bumper
+            if (bGrabFlag == true)
             {
-              flipServo.setPosition(1);
+              leftGrabB.setPosition(1);
+              rightGrabB.setPosition(0);
             }
-           else if (grabAflag = false)
+            //Open the top grabbers when the bGrabFlag is set true by the right bumper
+            else if (bGrabFlag == false)
             {
-              flipServo.setPosition(0);
+              leftGrabB.setPosition(0);
+              rightGrabB.setPosition(1);
             }
-          
-            
-            
-            
-            
-            /*if (gamepad2.y && grabAflag == false)
-            {
-                flipServo.setPosition(1);
-                grabAflag = true;
-            }
-            if (gamepad2.y && grabAflag == true)
-            {
-                flipServo.setPosition(0);
-                grabAflag = false;
-            }
-
-            */
-            if(gamepad2.right_bumper && grabAflag == false)
-            {
-                leftGrabA.setPosition(1);
-                rightGrabA.setPosition(0);
-                grabAflag = true;
-            }
-            if(gamepad2.right_bumper && grabAflag == true)
-            {
-                leftGrabA.setPosition(0);
-                rightGrabA.setPosition(1);
-                grabAflag = false;
-            }
-
-            if(gamepad2.left_bumper && grabBflag == false)
-            {
-                leftGrabB.setPosition(0);
-                rightGrabB.setPosition(1);
-                grabBflag = true;
-            }
-            if(gamepad2.left_bumper && grabBflag == true)
-            {
-                leftGrabB.setPosition(1);
-                rightGrabB.setPosition(0);
-                grabBflag = false;
-            }
-
-            // Show the elapsed game time and wheel power.
+  
+          //Close the top grabbers when the flipFlag is set true by Y
+          if (flipFlag == true)
+          {
+            flipServo.setPosition(1);
+          }
+          //Open the top grabbers when the flipFlag is set true by the Y
+          else if (flipFlag == false)
+          {
+            flipServo.setPosition(0);
+          }
+  
+          // Show the elapsed game time and wheel power.
+            telemetry.addData("Arm Position","(%.2f)",armPosition.getVoltage() );
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
             telemetry.update();
