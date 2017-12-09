@@ -63,15 +63,11 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
   private Servo leftGrabB;
   private Servo rightGrabB;
   private Servo flipServo;
-  private Servo tempServo1;
-  private Servo tempServo2;
+
 
 
   // Declare OpMode members.
-  private ElapsedTime runtime = new ElapsedTime();
-  private ElapsedTime fliptime = new ElapsedTime();
-  private ElapsedTime toptime = new ElapsedTime();
-  private ElapsedTime bottomtime = new ElapsedTime();
+  private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
   
   @Override
   public void runOpMode()
@@ -104,14 +100,11 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
     rightGrabB = hardwareMap.servo.get("leftGrabB");
     Grabber grabberB= new Grabber( leftGrabB, rightGrabB );
     
-    flipServo = hardwareMap.servo.get("flipServo");
-
-    FlipperHead flipper = new FlipperHead( grabberA, grabberB, flipServo);
-   
     armPosition = hardwareMap.analogInput.get("armPos");
-
-
+    flipServo = hardwareMap.servo.get("flipServo");
+    Arm arm = new Arm(armDrive, armPosition);
     
+    FlipperHead flipper = new FlipperHead( grabberA, grabberB, flipServo, arm);
     
     // Most robots need the motor on one side to be reversed to drive forward
     // Reverse the motor that runs backwards when connected directly to the battery
@@ -124,28 +117,19 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
     // Start position of the jewel bumping arm (up)
     jewelServo.setPosition(1);
 
-    flipper.flipInit();
-
     armDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-    boolean flipTimerRunningFlag = false;
-    boolean flipButtonFlag = false;
-    final double flipDebounceTime = 1.0;
-    
-    boolean topGrabFlag = false;
     boolean topGrabToggleFlag = false;
-    boolean topGrabTimerRunningFlag = false;
-    final double topGrabDebounceTime = 0.50;
-    
-    boolean bottomGrabFlag = false;
     boolean bottomGrabToggleFlag = false;
-    boolean bottomGrabTimerRunningFlag = false;
-    final double bottomGrabDebounceTime = 0.50;
 
     // Wait for the game to start (driver presses PLAY)
     waitForStart();
+   
     runtime.reset();
-
+    // calibrate the arm range and initialize the flipper
+    arm.initArmHeight();
+    flipper.flipInit();
+    
     // run until the end of the match (driver presses STOP)
     while (opModeIsActive())
     {
@@ -165,109 +149,64 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
         rightRamp = -rightRamp;
       }
 
-    //When the dpad is pressed up or down and the flag is false then the arm moves up or down as arm runtime is tracked,
-        // otherwise it is stationary and and arm runtime is set to zero and arm off time begins tracking
-      if(gamepad2.dpad_up)
-      {
-        armDrive.setPower(0.4);
-      }
-      else if (gamepad2.dpad_down)
-          {
-        armDrive.setPower(-0.1);
-      }
-      else
-      {
-          armDrive.setPower(0);
-      }
+      //When the dpad is pressed up or down and the flag is false then the arm moves up or down as arm runtime is tracked,
+      // otherwise it is stationary and and arm runtime is set to zero and arm off time begins tracking
+      arm.setArmHeight(gamepad2.dpad_up, gamepad2.dpad_down);
 
       // flipper head control
-      
-      if( gamepad2.y && !flipButtonFlag )
+      if( gamepad2.y && flipper.flipAllowed() )
       {
         flipper.flip();
-        flipButtonFlag = true;
-        fliptime.reset();
-        flipTimerRunningFlag = true;
       }
-      else if ( flipTimerRunningFlag )
-      {
-        if ( fliptime.time() >= flipDebounceTime )
-        {
-          flipButtonFlag = false;
-          flipTimerRunningFlag = false;
-        }
-      }
+
       
-      
-      if(gamepad2.left_bumper && !bottomGrabFlag)
+      if( gamepad2.left_bumper && flipper.bottomAllowed() )
       {
-        if (! bottomGrabToggleFlag)
+        if (!bottomGrabToggleFlag)
         {
           flipper.closeBottom();
           bottomGrabToggleFlag = true;
-        }
-        else
+        } else
         {
           flipper.openBottom();
           bottomGrabToggleFlag = false;
         }
-        bottomGrabFlag = true;
-        bottomtime.reset();
-        bottomGrabTimerRunningFlag = true;
-      }
-      else if ( bottomGrabTimerRunningFlag )
-      {
-        if ( bottomtime.time() >= bottomGrabDebounceTime )
-        {
-          bottomGrabFlag = false;
-        }
       }
   
-  
-      if(gamepad2.right_bumper && !topGrabFlag)
+      if( gamepad2.right_bumper && flipper.topAllowed() )
       {
-        if (! topGrabToggleFlag)
+        if (!topGrabToggleFlag)
         {
           flipper.closeTop();
           topGrabToggleFlag = true;
-        }
-        else
+        } else
         {
           flipper.openTop();
           topGrabToggleFlag = false;
         }
-        topGrabFlag = true;
-        toptime.reset();
-        topGrabTimerRunningFlag = true;
       }
-      else if ( topGrabTimerRunningFlag )
-      {
-        if ( toptime.time() >= topGrabDebounceTime )
-        {
-          topGrabFlag = false;
-        }
-      }
-
       
 
-        //Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1
-        // (sets the values to between 1 and -1)
-        leftPower = Range.clip( leftRamp, -1.0, 1.0 );
-        rightPower = Range.clip( rightRamp, -1.0, 1.0 );
+      // Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1
+      // (sets the values to between 1 and -1)
+      leftPower = Range.clip( leftRamp, -1.0, 1.0 );
+      rightPower = Range.clip( rightRamp, -1.0, 1.0 );
 
 
-        // Send calculated power to wheels
-        frontLeftDrive.setPower(leftPower);
-        rearLeftDrive.setPower(leftPower);
+      // Send calculated power to wheels
+      frontLeftDrive.setPower(leftPower);
+      rearLeftDrive.setPower(leftPower);
 
-        frontRightDrive.setPower(rightPower);
-        rearRightDrive.setPower(rightPower);
-        
-
-        // Show the elapsed game time and wheel power.
-        telemetry.addData("Status", "Run Time: " + runtime.toString());
-        telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
-        telemetry.update();
+      frontRightDrive.setPower(rightPower);
+      rearRightDrive.setPower(rightPower);
+  
+      jewelServo.setPosition(1);  // keep the jewl arm up
+      
+      // Show the elapsed game time and wheel power.
+      telemetry.addData("Arm Position","(%.2f)",armPosition.getVoltage() );
+      telemetry.addData("Status", "Run Time: " + runtime.toString());
+      telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
+      telemetry.update();
     }
   }
 }

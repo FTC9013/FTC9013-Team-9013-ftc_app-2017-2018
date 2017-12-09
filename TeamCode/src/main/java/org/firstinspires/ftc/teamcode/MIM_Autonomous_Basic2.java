@@ -83,8 +83,7 @@ public class MIM_Autonomous_Basic2 extends LinearOpMode
         armDrive = hardwareMap.get (DcMotor.class, "armDrive");
 
         jewelServo = hardwareMap.servo.get("jewelServo");
-        leftGrab = hardwareMap.servo.get("leftGrab");
-        rightGrab = hardwareMap.servo.get("rightGrab");
+
 
         jewelColor = hardwareMap.colorSensor.get("jewelColor");
         jewelColor.enableLed(true);
@@ -97,9 +96,6 @@ public class MIM_Autonomous_Basic2 extends LinearOpMode
         rearLeftDrive.setDirection(DcMotor.Direction.FORWARD);
         rearRightDrive.setDirection(DcMotor.Direction.REVERSE);
         armDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        leftGrab.setPosition(0);
-        rightGrab.setPosition(1);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();

@@ -101,8 +101,6 @@ public class MIM_Autonomous_Red extends LinearOpMode
         armDrive = hardwareMap.get (DcMotor.class, "armDrive");
 
         jewelServo = hardwareMap.servo.get("jewelServo");
-        leftGrab = hardwareMap.servo.get("leftGrab");
-        rightGrab = hardwareMap.servo.get("rightGrab");
 
         jewelColor = hardwareMap.colorSensor.get("jewelColor");
         jewelColor.enableLed(true);
@@ -118,9 +116,6 @@ public class MIM_Autonomous_Red extends LinearOpMode
 
         // Start position of the jewel bumping arm (up)
         jewelServo.setPosition(1);
-
-        leftGrab.setPosition(0);
-        rightGrab.setPosition(1);
 
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
                 "cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());

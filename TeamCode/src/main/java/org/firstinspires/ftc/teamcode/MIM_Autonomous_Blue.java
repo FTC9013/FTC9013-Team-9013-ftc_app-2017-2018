@@ -86,8 +86,7 @@ public class MIM_Autonomous_Blue extends LinearOpMode
         armDrive = hardwareMap.get (DcMotor.class, "armDrive");
 
         jewelServo = hardwareMap.servo.get("jewelServo");
-        leftGrab = hardwareMap.servo.get("leftGrab");
-        rightGrab = hardwareMap.servo.get("rightGrab");
+
 
         jewelColor = hardwareMap.colorSensor.get("jewelColor");
         jewelColor.enableLed(true);
@@ -103,9 +102,6 @@ public class MIM_Autonomous_Blue extends LinearOpMode
 
         // Start position of the jewel bumping arm (up)
         jewelServo.setPosition(1);
-
-        leftGrab.setPosition(0);
-        rightGrab.setPosition(1);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
@@ -129,7 +125,8 @@ public class MIM_Autonomous_Blue extends LinearOpMode
                 leftPower=0.5;
             }
 
-            if (jewelColor.red() > 20 && (runtime.seconds() < 1.0))
+            if (jewelColor.red() > 20 &&
+              (runtime.seconds() < 1.0))
             {
                 rightPower=-0.5;
                 leftPower=-0.5;

@@ -77,8 +77,6 @@ public class MIM_TeleOp extends LinearOpMode
         Servo leftGrabB;
         Servo rightGrabB;
         Servo flipServo;
-        Servo tempServo1;
-        Servo tempServo2;
 
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower = 0;
