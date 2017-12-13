@@ -127,7 +127,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
    
     runtime.reset();
     // calibrate the arm range and initialize the flipper
-    arm.initArmHeight();
+    arm.calibrateArmHeight();
     flipper.flipInit();
     
     // run until the end of the match (driver presses STOP)
@@ -200,7 +200,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
       frontRightDrive.setPower(rightPower);
       rearRightDrive.setPower(rightPower);
   
-      jewelServo.setPosition(1);  // keep the jewl arm up
+      jewelServo.setPosition(1);  // keep the jewel arm up
       
       // Show the elapsed game time and wheel power.
       telemetry.addData("Arm Position","(%.2f)",armPosition.getVoltage() );

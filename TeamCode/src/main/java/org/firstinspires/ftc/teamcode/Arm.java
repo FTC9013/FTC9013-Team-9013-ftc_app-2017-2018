@@ -16,6 +16,7 @@ public class Arm
   
   private DcMotor armMotor = null;
   private AnalogInput armSensor = null;
+  ArmPID armPID = null;
   private double height_;
   private double desiredHeight_ = 0;
   
@@ -41,8 +42,25 @@ public class Arm
   {
     armMotor = aMotor;
     armSensor = aSensor;
-  }
+  
+    // create and initialize the PID for the arm motor
 
+    final double propCoeff = 0.25;
+    final double integCoeff = 0.01;
+    final double diffCoeff = 0.04;
+  
+    armPID = new ArmPID(propCoeff, integCoeff, diffCoeff);
+    
+    // initially setup the PID parameters
+    armPID.setOutputLimits( -1, 1 );
+    armPID.setMaxIOutput(0.1);
+    armPID.setOutputRampRate(0.02);
+    armPID.setOutputFilter(0.2);
+    armPID.setSetpointRange(1);
+  
+    armPID.setSetpoint(0);
+  }
+  
   
   public  void setArmHeight (boolean up, boolean down)
   {
@@ -61,8 +79,6 @@ public class Arm
     heightVoltage_ = armSensor.getVoltage();
     // checking and scaling of inputs
     height_ = Range.scale(heightVoltage_, bottomLimitVoltage, topLimitVoltage, 0, 1);
-    desiredHeight_ = Range.clip( desiredHeight_, 0, 1);
-    
     
     // crude control of motor power based on height and desired height
     if( height_ < desiredHeight_ )
@@ -86,7 +102,7 @@ public class Arm
   }
   
   
-  public  void initArmHeight ()
+  public  void calibrateArmHeight ()
   {
     ElapsedTime initTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     desiredHeight_ = 0 ;
