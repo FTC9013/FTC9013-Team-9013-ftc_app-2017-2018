@@ -13,6 +13,9 @@ public class Arm
 {
   
   ElapsedTime heightStepTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+  ElapsedTime flipLockoutArmDownTimer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
+  private final double flipHeightLockOut = 0.4;
+
   
   private DcMotor armMotor = null;
   private AnalogInput armSensor = null;
@@ -25,16 +28,17 @@ public class Arm
   private double heightVoltage_;
   
   
-  private final double initHighTime = 2.5;  // run motor up for n seconds.
-  private final double initLowTime = 1.5;  // run motor down for n seconds.
+  private final double initHighTime = 1.5;  // run motor up for n seconds.
+  private final double initLowTime = 0.75;  // run motor down for n seconds.
   
-  private final double flipHeight_ = 0.1;
+  private final double flipHeight_ = 0.3;
   private final double minFlipHeight_ = 0.25;
   
-  private final double armTrimTop_ = 0.02;    // keeps the arm from moving to the absolute end of range
-  private final double armTrimBottom_ = 0.03;
+  private final double armTrimTop_ = 0.1;    // keeps the arm from moving to the absolute end of range
+  private final double armTrimBottom_ = 0.1;
   
-  private final double heightStep_ = 0.01;
+  private final double heightUpStep_ = 0.01;
+  private final double heightDownStep_ = 0.001;
   private final double heightTimerTick_ = 0.01;
   
   
@@ -67,12 +71,14 @@ public class Arm
     // calculate the desired height based on the up down inputs
     if( up && ( desiredHeight_ < 1 ) && (heightStepTimer.time() > heightTimerTick_) )
     {
-      desiredHeight_ += heightStep_ ;
+      desiredHeight_ += heightUpStep_ ;
       heightStepTimer.reset();
     }
-    else if ( down && ( desiredHeight_ > 0) && (heightStepTimer.time() > heightTimerTick_) )
+    else if ( down
+             && ( desiredHeight_ > 0) && (heightStepTimer.time() > heightTimerTick_)
+             && flipLockoutArmDownTimer.time() > flipHeightLockOut )
     {
-      desiredHeight_ -= heightStep_ ;
+      desiredHeight_ -= heightDownStep_ ;
       heightStepTimer.reset();
     }
   
@@ -80,24 +86,17 @@ public class Arm
     // checking and scaling of inputs
     height_ = Range.scale(heightVoltage_, bottomLimitVoltage, topLimitVoltage, 0, 1);
     
-    // crude control of motor power based on height and desired height
-    if( height_ < desiredHeight_ )
-    {
-      armMotor.setPower(0.4);  // arm goes up
-    }
-    else if (height_ > desiredHeight_ )
-    {
-      armMotor.setPower(-0.1);  // arm goes down
-    }
-    else
-    {
-      armMotor.setPower(0);
-    }
+    armMotor.setPower(armPID.getOutput(height_,desiredHeight_));
   }
   
   public boolean flipAllowed()
   {
-    desiredHeight_ = flipHeight_;
+    if(height_ < minFlipHeight_)
+    {
+      desiredHeight_ = flipHeight_;
+      flipLockoutArmDownTimer.reset();
+    }
+    
     return height_ >= minFlipHeight_;
   }
   

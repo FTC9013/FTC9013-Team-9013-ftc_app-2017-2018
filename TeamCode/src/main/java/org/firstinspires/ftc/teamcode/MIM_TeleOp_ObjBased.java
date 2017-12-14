@@ -117,7 +117,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
     // Start position of the jewel bumping arm (up)
     jewelServo.setPosition(1);
 
-    armDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+//    armDrive.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     boolean topGrabToggleFlag = false;
     boolean bottomGrabToggleFlag = false;
