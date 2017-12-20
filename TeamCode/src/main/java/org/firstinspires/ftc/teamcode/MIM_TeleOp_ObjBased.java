@@ -121,7 +121,8 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
 
     boolean topGrabToggleFlag = false;
     boolean bottomGrabToggleFlag = false;
-
+    boolean partialGrabToggleFlag = false;
+    
     // Wait for the game to start (driver presses PLAY)
     waitForStart();
    
@@ -159,34 +160,42 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
         flipper.flip();
       }
 
-      
+      // Full Bottom Toggle
       if( gamepad2.left_bumper && flipper.bottomAllowed() )
       {
         if (!bottomGrabToggleFlag)
         {
-          flipper.closeBottom();
+          flipper.OpenBottom();
           bottomGrabToggleFlag = true;
-        } else
+        }
+        if (bottomGrabToggleFlag)
         {
-          flipper.openBottom();
+          flipper.closeBottom();
           bottomGrabToggleFlag = false;
         }
       }
-  
+      
+      // Full Top Toggle
       if( gamepad2.right_bumper && flipper.topAllowed() )
       {
         if (!topGrabToggleFlag)
         {
-          flipper.closeTop();
+          flipper.OpenTop();
           topGrabToggleFlag = true;
-        } else
+        }
+        if ( topGrabToggleFlag )
         {
-          flipper.openTop();
+          flipper.closeTop();
           topGrabToggleFlag = false;
+          
         }
       }
+  
+      if( gamepad2.x )
+      {
+        flipper.partOpen();
+      }
       
-
       // Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1
       // (sets the values to between 1 and -1)
       leftPower = Range.clip( leftRamp, -1.0, 1.0 );

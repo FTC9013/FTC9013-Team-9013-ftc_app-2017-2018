@@ -28,8 +28,8 @@ public class Arm
   private double heightVoltage_;
   
   
-  private final double initHighTime = 1.5;  // run motor up for n seconds.
-  private final double initLowTime = 0.75;  // run motor down for n seconds.
+  private final double initHighTime = 2.5;  // run motor up for n seconds.
+  private final double initLowTime = 1.0;  // run motor down for n seconds.
   
   private final double flipHeight_ = 0.3;
   private final double minFlipHeight_ = 0.25;
@@ -37,8 +37,8 @@ public class Arm
   private final double armTrimTop_ = 0.1;    // keeps the arm from moving to the absolute end of range
   private final double armTrimBottom_ = 0.1;
   
-  private final double heightUpStep_ = 0.01;
-  private final double heightDownStep_ = 0.001;
+  private final double heightUpStep_ = 0.03;
+  private final double heightDownStep_ = 0.005;
   private final double heightTimerTick_ = 0.01;
   
   
@@ -117,7 +117,7 @@ public class Arm
 
     initTimer.reset();
     // calibrate the lower limit
-    armMotor.setPower(-0.1);
+    armMotor.setPower(-0.05);
     while (initTimer.time() < initLowTime )
     {
       bottomLimitVoltage = armSensor.getVoltage();
