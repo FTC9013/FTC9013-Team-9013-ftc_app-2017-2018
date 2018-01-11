@@ -136,8 +136,8 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
         leftStick1 =  gamepad1.left_stick_y;
         rightStick1 = gamepad1.right_stick_y;
 
-        double leftRamp = Math.pow(Math.abs(leftStick1), 2.5);
-        double rightRamp = Math.pow(Math.abs(rightStick1), 2.5);
+        double leftRamp = Math.pow(Math.abs(leftStick1), 1.5);
+        double rightRamp = Math.pow(Math.abs(rightStick1), 1.5);
 
       if( gamepad1.left_stick_y < 0 )
       {
@@ -204,6 +204,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
       
       // Show the elapsed game time and wheel power.
       telemetry.addData("Arm Position","(%.2f)",armPosition.getVoltage() );
+      telemetry.addData("Arm Desired Ht.","(%.2f)",arm.desiredHeight);
       telemetry.addData("Status", "Run Time: " + runtime.toString());
       telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
       telemetry.update();
