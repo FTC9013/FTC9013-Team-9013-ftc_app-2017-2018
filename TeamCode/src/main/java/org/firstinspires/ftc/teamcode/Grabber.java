@@ -16,9 +16,10 @@ public class Grabber
   private  Servo servo1 = null;
   private  Servo servo2 = null;
   private  boolean isOpen_ = true;// initialize to open
-  double openA = 1;
-  double openB = 0;
-  
+  private  double openA = 1;
+  private  double openB = 0;
+  private  double closedA = 0;
+  private  double closedB = 1;
   
   
 
@@ -38,25 +39,11 @@ public class Grabber
     isOpen_= true;
   }
   
-  public void PartOpen( boolean mode )
-  {
-    if(mode)
-    {
-      openA = 0.5;
-      openB = 0.5;
-    }
-    else
-    {
-      openA = 1;
-      openB = 0;
-    }
-  }
-  
   public void close()
   {
     // set the servos to the closed jaw state
-    servo1.setPosition( 0 );
-    servo2.setPosition( 1 );
+    servo1.setPosition( closedA );
+    servo2.setPosition( closedB );
     isOpen_= false;
   }
   

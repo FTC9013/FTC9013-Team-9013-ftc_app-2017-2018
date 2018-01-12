@@ -121,7 +121,6 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
 
     boolean topGrabToggleFlag = false;
     boolean bottomGrabToggleFlag = false;
-    boolean partialGrabToggleFlag = false;
     
     // Wait for the game to start (driver presses PLAY)
     waitForStart();
@@ -160,7 +159,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
         flipper.flip();
       }
 
-      // Full Bottom Toggle
+      // Bottom Toggle
       if( gamepad2.left_bumper && flipper.bottomAllowed() )
       {
         if (!bottomGrabToggleFlag)
@@ -168,7 +167,7 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
           flipper.OpenBottom();
           bottomGrabToggleFlag = true;
         }
-        if (bottomGrabToggleFlag)
+        else
         {
           flipper.closeBottom();
           bottomGrabToggleFlag = false;
@@ -183,17 +182,12 @@ public class MIM_TeleOp_ObjBased extends LinearOpMode
           flipper.OpenTop();
           topGrabToggleFlag = true;
         }
-        if ( topGrabToggleFlag )
+        else
         {
           flipper.closeTop();
           topGrabToggleFlag = false;
           
         }
-      }
-  
-      if( gamepad2.x )
-      {
-        flipper.partOpen();
       }
       
       // Clips the left or right drive powers to 1 if it is > 1 and to -1 if it is < -1

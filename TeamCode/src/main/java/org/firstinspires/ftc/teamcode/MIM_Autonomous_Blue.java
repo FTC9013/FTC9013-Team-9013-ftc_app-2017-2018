@@ -68,6 +68,10 @@ public class MIM_Autonomous_Blue extends LinearOpMode
         Servo leftGrab;
         Servo rightGrab;
 
+        double armUp = 0;
+        double armDown = 0.4;
+        
+        boolean driveForward = false;
 
         // Setup a variable for each drive wheel to save power level for telemetry
         double leftPower = 0;
@@ -101,12 +105,18 @@ public class MIM_Autonomous_Blue extends LinearOpMode
         armDrive.setDirection(DcMotor.Direction.REVERSE);
 
         // Start position of the jewel bumping arm (up)
-        jewelServo.setPosition(1);
+        jewelServo.setPosition(armUp);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
-
+        
+        jewelServo.setPosition(armDown);
+        // wait a couple seconds for the arm to lower and steady.
+        while(runtime.seconds() < 2.0){}
+  
+        runtime.reset();
+        
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive())
         {
@@ -118,29 +128,34 @@ public class MIM_Autonomous_Blue extends LinearOpMode
             frontRightDrive.setPower(rightPower);
             rearRightDrive.setPower(rightPower);
 
-            //See Color, and if the time is under 3.00 seconds move forward.
-            if (jewelColor.blue() > 20 && (runtime.seconds() < 1.0))
+            //See Color,
+            if (jewelColor.blue() > 20)
             {
-                rightPower=0.5;
-                leftPower=0.5;
+              driveForward = true;
             }
-
-            if (jewelColor.red() > 20 &&
-              (runtime.seconds() < 1.0))
+            
+            if ( driveForward && runtime.seconds() < 1.0)
             {
-                rightPower=-0.5;
-                leftPower=-0.5;
+                rightPower=0.2;
+                leftPower=0.2;
+            }
+            else if ( !driveForward && (runtime.seconds() < 1.0))
+            {
+                rightPower=-0.2;
+                leftPower=-0.2;
+            }
+            else if (runtime.seconds() > 1.0 && runtime.seconds() < 2.0 )
+            {
+              rightPower = 0;
+              leftPower = 0;
             }
             //After 4.00 seconds are up, and the sensor sees no red or blue color, the jewel arm will move up.
-            if ( runtime.seconds() > 1.5 && jewelColor.red() < 20 && jewelColor.blue() < 20)
+            else
             {
-                jewelServo.setPosition(1);
+                jewelServo.setPosition(armUp);
+                rightPower = 0;
+                leftPower = 0;
             }
-             else
-            {
-                jewelServo.setPosition(0.5);
-            }
-
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

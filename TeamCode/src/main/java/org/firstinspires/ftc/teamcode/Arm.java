@@ -67,12 +67,6 @@ public class Arm
     armPID.setSetpoint(0);
   }
   
-  public double roundValue (double variable)
-  {
-    DecimalFormat twoDForm = new DecimalFormat("#.##");
-    return Double.valueOf(twoDForm.format(variable));
-  }
-  
   public  void setArmHeight (boolean up, boolean down)
   {
     // calculate the desired height based on the up down inputs
@@ -80,7 +74,6 @@ public class Arm
     {
       desiredHeight += heightUpStep_ ;
       heightStepTimer.reset();
-      roundValue(desiredHeight) ;
     }
     else if ( down
              && ( desiredHeight > 0) && (heightStepTimer.time() > heightTimerTick_)
@@ -88,7 +81,6 @@ public class Arm
     {
       desiredHeight -= heightDownStep_ ;
       heightStepTimer.reset();
-      roundValue( desiredHeight );
     }
   
     heightVoltage_ = armSensor.getVoltage();
